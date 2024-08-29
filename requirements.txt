@@ -1,0 +1,7 @@
+python-dotenv
+numpy
+tifffile
+matplotlib
+pandas
+seaborn
+careamics==0.1.0rc8
