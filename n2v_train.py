@@ -23,7 +23,7 @@ def train_n2v(dataset_name,
               patch_size=64, 
               batch_size=16, 
               num_epochs=10,
-              axes="ZXY"):
+              axes="ZYX"):
     DATASET_SUBFOLDER = os.path.join(dataset_folder, dataset_name)
 
     model_folder = os.path.join(models_folder, experiment_name)

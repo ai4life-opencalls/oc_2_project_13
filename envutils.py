@@ -6,23 +6,48 @@ import argparse
 
 """
  This script is made to manage the environment of a research project that can be run from different environments using the same codebase.
- For example, if the code is stored in a network-shared repository but the model/dataset folders are different between the different environments.
- It also contains some utility functions.
+ The aim is to merge the functionalities of dotenv and argparse, while also providing a logger with a level that can be set via arguments.
+ 
+ Use cases
+ 
+ - When the code is stored in a network-shared repository but the model/dataset folders are different between the different environments 
+ (e.g., you debug on your local machine or a virtual desktop and then run experiments on an HPC.)
+ It also contains some other utility functions.
 
+ - When you want to be able to use either environment variables, .env files, and command line arguments to set your script environment.
+
+ Example usage:
+ 
+ 
  Usage in your script:
 
  from envutils import ENV, load_env, get_tiff_paths, get_argparser
 
-
  if __name__ == "__main__":
-    # This loads
-    parser = get_argparser(description="Train a N2V model on the given dataset.")
-    parser.add_argument('dataset_name', type=str, help='Dataset Name, as subfolder of the dataset directory containing the .tif files')
+
+    # Create a new argparser using the helper provided. 
+    # It will automatically add some default arguments, such as --env for specifying the env file and --level to specify the logger level.
+    parser = get_argparser(description="My Script")
+
+    # Add your custom script arguments as usual
+    parser.add_argument('-customvariable',type=str, default='last.ckpt', help="Model .ckpt filename to use for prediction. Defaults to last.ckpt.")
     args = parser.parse_args()
- 
-    # This loads the provided .env file
-   load_env(args.env)
- 
+
+    # Now you can use the default arguments added by envutils
+    log.setLevel(args.level)
+
+    # Finally, load the environment. It will check if all the required variables are set in the .env files.
+    # If you also pass the argument parser as parameter, it will also allow to override variables contained in the .env file with those passed as arguments.
+    load_env(args.env, parser_args=args)
+
+    # That's how you access a variable contained in the .env file:
+    ENV['DATASET_FOLDER']
+    # since we passed the parser to load_env, it will get overridden if you call the scripts with python --DATASET_FOLDER="something_else"
+
+    # That's how you access your custom defined argument:
+    args.customvariable
+
+
 """
 
 logging.basicConfig(level=logging.WARNING)
@@ -79,7 +104,7 @@ def load_env(dot_env:str | Path, env_dict: dict=ENV, parser_args: dict | argpars
     return env_dict
 
 
-def get_tiff_paths(dataset_subfolder: str, extension: str=".tif", env=ENV):
+def get_tiff_paths(dataset_subfolder: str, extension: str=".tif*", env=ENV):
     """
         Returns all the paths for the given dataset subfolder.
         The root of the dataset is fetched from the environment loaded using load_env (i.e., ENV["DATASET_FOLDER"]).
