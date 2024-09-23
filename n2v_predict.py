@@ -106,7 +106,7 @@ def predict_n2v(
 
         if save_outputs:
             tiff_path_out = Path.joinpath(Path(output_path), tiff_path_in.name)
-            print(f"Writing prediction to {tiff_path_in}")
+            print(f"Writing prediction to {tiff_path_out}")
             os.makedirs(output_path, exist_ok=True)
             tifffile.imwrite(tiff_path_out, tiff_out)
         else:
