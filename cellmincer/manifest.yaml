@@ -1,0 +1,5 @@
+n_frames_per_segment: 1009
+n_segments: 2
+order: tyx
+sampling_rate: 50
+infer_active_t_range: trues

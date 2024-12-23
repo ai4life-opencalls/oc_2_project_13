@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 from pathlib import Path
+from typing import Union
 import logging
 import os
 import argparse
@@ -57,7 +58,7 @@ log = logging.getLogger(__name__)
 ENV = {"DATASET_FOLDER": None, "OUTPUT_FOLDER": None, "MODELS_FOLDER": None}
 
 ### ENV MANAGEMENT AND ARGPARSE
-def load_env(dot_env:str | Path, env_dict: dict=ENV, parser_args: dict | argparse.Namespace | None = None) -> dict:
+def load_env(dot_env:Union[str, Path], env_dict: dict=ENV, parser_args: Union[dict, argparse.Namespace, None] = None) -> dict:
     """
        Loads a .env file and validates the required environment variables, 
        allowing to keep track of environment variables used from your script and to manage multiple environments (e.g., multiple machines.)

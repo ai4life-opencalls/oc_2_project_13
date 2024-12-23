@@ -13,7 +13,8 @@ from careamics.config import create_n2v_configuration
 from careamics.lightning import TrainDataModule
 
 
-def train_n2v(dataset_name, 
+def train_n2v(train_dataset_name, 
+              validation_dataset_name,
               dataset_folder, 
               models_folder, 
               experiment_name, 
@@ -24,7 +25,8 @@ def train_n2v(dataset_name,
               batch_size=16, 
               num_epochs=10,
               axes="ZYX"):
-    DATASET_SUBFOLDER = os.path.join(dataset_folder, dataset_name)
+    train_dataset_folder = os.path.join(dataset_folder, train_dataset_name)
+    validation_dataset_folder = os.path.join(dataset_folder, validation_dataset_name)
 
     model_folder = os.path.join(models_folder, experiment_name)
 
@@ -38,12 +40,13 @@ def train_n2v(dataset_name,
         batch_size=batch_size,
         num_epochs=num_epochs,
         use_n2v2=use_n2v2,
-        use_augmentations=use_augmentations
+        augmentations=[] if not use_augmentations else None
     )
 
     data_module = TrainDataModule( 
         data_config=config.data_config,
-        train_data=DATASET_SUBFOLDER,
+        train_data=train_dataset_folder,
+        val_data=validation_dataset_folder,
         use_in_memory=False
     )
 
@@ -66,7 +69,8 @@ if __name__ == "__main__":
     # Get a parser that include some default ENV VARS overrides
     parser = get_argparser(description="Train a N2V model on the given dataset.")
     # Add script-specific varibles
-    parser.add_argument('--dataset_name', type=str, help='Dataset Name, as subfolder of the dataset directory containing the .tif files')
+    parser.add_argument('--train_dataset_name', type=str, help='Dataset Name, as subfolder of the dataset directory containing the .tif files')
+    parser.add_argument('--validation_dataset_name', type=str, help='Dataset Name, as subfolder of the dataset directory containing the .tif files')
     parser.add_argument('--experiment_name', type=str, help='Name of the experiment. Will be used to create corresponding subfolders.')
     parser.add_argument('--use_n2v2', action="store_true", help='Whether to use N2V2.')
     parser.add_argument('--use_augmentations', action="store_true", help='Whether to use N2V2.')
@@ -86,7 +90,8 @@ if __name__ == "__main__":
     
 
 
-    train_n2v(dataset_name = args.dataset_name, 
+    train_n2v(train_dataset_name = args.train_dataset_name,
+              validation_dataset_name = args.validation_dataset_name,
               dataset_folder=ENV.get("DATASET_FOLDER"),
               models_folder=ENV.get("MODELS_FOLDER"),
               experiment_name=args.experiment_name,

@@ -1,0 +1,3 @@
+[submodule "COSDD"]
+	path = COSDD
+	url = https://github.com/krulllab/COSDD.git
