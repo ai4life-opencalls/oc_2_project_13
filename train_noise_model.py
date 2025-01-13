@@ -68,43 +68,54 @@ def train_noise_models(signal_folder: str,
     # Original dataset
     signal_tiff = list(Path(signal_folder).rglob("*.tif"))
     denoised_tiff = list(Path(denoised_folder).rglob("*.tif"))
+
+    print(f"Found signals {signal_tiff}")
+    print(f"Found denoised {denoised_tiff}")
+
     input_tiff = list()
     # Ensure signal and denoised files are loaded together
     for stiff in signal_tiff:
         dtiff = [t for t in list(denoised_tiff) if t.name == stiff.name][0]
         input_tiff.append((stiff, dtiff))
+        print(f"Matching {stiff} with {dtiff}")
 
     signal = []
     denoised = []
 
     for tsig, tden in zip(signal_tiff, denoised_tiff):
+        print(f"Loading {stiff} and {dtiff}")
         signal.append(tifffile.imread(tsig).flatten())
         denoised.append(tifffile.imread(tden).flatten())
     
+    print(f"Concatenating files...")
     signal = np.concatenate(signal, axis=0)
     denoised = np.concatenate(denoised, axis=0)
     # Here signal and denoised are 1D arrays with all the pixels concatenated
 
     minval, maxval = signal.min(), signal.max()
 
+    print(f"Sampling Data...")
     if random_perc < 1.0:
         print(f"Using {random_perc * 100}% of the data")
         idx = np.random.choice(signal.shape[0], int(random_perc * signal.shape[0]), replace=False)
         signal = signal[idx]
         denoised = denoised[idx]
 
-    # Train an Histogram Noise Model
-    histogram = histNoiseModel.createHistogram(bins=histogram_bins, 
-                                           minVal=minval, 
-                                           maxVal=maxval, 
-                                           observation=denoised, 
-                                           signal=signal)
+    # print(f"Training Histogram...")
+    # # Train an Histogram Noise Model
+    # histogram = histNoiseModel.createHistogram(bins=histogram_bins, 
+    #                                        minVal=minval, 
+    #                                        maxVal=maxval, 
+    #                                        observation=denoised, 
+    #                                        signal=signal)
 
-    # Create output folder and save histogram
-    hist_savepath = str(Path(noise_model_folder).joinpath('histogram.npy'))
-    np.save(hist_savepath, histogram)
+    # # Create output folder and save histogram
+    # hist_savepath = str(Path(noise_model_folder).joinpath('histogram.npy'))
+    # np.save(hist_savepath, histogram)
+    # print(f"Saved histogram to {hist_savepath}")
+
     gmm_savepath = str(Path(noise_model_folder)) + '/'
-    print(f"Saved histogram to {hist_savepath}")
+    print("Training GMM")
     gaussianMixtureNoiseModel = GaussianMixtureNoiseModel(min_signal = minval, 
                                                           max_signal = maxval, 
                                                           path=gmm_savepath, 
@@ -114,7 +125,6 @@ def train_noise_models(signal_folder: str,
                                                           device = device, 
                                                           min_sigma = gmm_min_sigma)
 
-    print("Training GMM")
     # Train GMM
     gaussianMixtureNoiseModel.train(signal, 
                                     denoised, 
@@ -141,21 +151,21 @@ if __name__ == "__main__":
     parser.add_argument('--n_coeff', type=int, default=2, help='Number of coefficients for the GMM')
     parser.add_argument('--n_gaussian', type=int, default=3, help='Number of Gaussians for the GMM')
     parser.add_argument('--gmm_epochs', type=int, default=1000, help='Number of epochs for the GMM')
-    parser.add_argument('--gmm_learning_rate', type=float, default=0.1, help='Learning rate for the GMM')
+    parser.add_argument('--gmm_learning_rate', type=float, default=0.1, help='Learning rate for the GMM')  
     parser.add_argument('--gmm_batch_size', type=int, default=250000, help='Batch size for the GMM')
     parser.add_argument('--gmm_clip_perc', type=float, default=0.1, help='Percentage to clip for the GMM')
     parser.add_argument('--gmm_min_sigma', type=float, default=50, help='Minimum sigma for the GMM')
     parser.add_argument('--random_perc', type=float, default=1.0, help='Percentage of the dataset to use for training')
     parser.add_argument('--device', type=str, default='cuda', help='Device to use for training')
 
-
-
     args = parser.parse_args()
     # Set Log Level from arguments
     log.setLevel(args.level)
     # Load env vars and args overrides into ENV dictionary
     load_env(args.env, parser_args=args)
-    
+    # FIXME: FOR SOME REASONS ON HPC BATCH COMPUTATION HALTS BETWEEN LAST INSTRUCTION OF load_env AND THE FOLLOWING PRINT (???) DOES NOT HAPPEN IN HPC INTERACTIVE
+    print("env loaded", flush=True)
+
     train_noise_models( 
                         signal_folder = args.signal_folder,
                         denoised_folder = args.denoised_folder,
