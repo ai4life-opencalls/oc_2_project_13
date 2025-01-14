@@ -103,7 +103,7 @@ def train_network(model, lr, max_epochs,steps_per_epoch,train_loader, val_loader
                 step = model.global_step
                 
                 if(test_log_every > 0):
-                    if step % test_log_every == 0       :
+                    if step % test_log_every == 0 and step > 0:
                     
                         print("Testing the model at " "step {}". format(step))
                         with torch.no_grad():
