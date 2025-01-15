@@ -39,9 +39,7 @@ The architecture employed in N2V is based on blind-spot networks. This design ex
 During training, a mask prevents the model from accessing the value of the central pixel, that the network aims to predict. Instead, it utilizes information from surrounding pixels, which encourages the model to learn how to reconstruct the central pixel's value based on its context within the image.
 
 ### Advantages
-One of the most significant advantages of Noise2Void is that it doesn't require ground truth images or high SNR images to be trained. This characteristic makes N2V particularly suitable for denoising microscopy images, where obtaining clean reference images can be challenging.
-
-Moreover, N2V has been shown to perform competitively against other denoising methods that do have access to clean targets or noisy pairs, despite its more limited training data requirements.
+One of the most significant advantages of Noise2Void is that it doesn't require ground truth images or high SNR images to be trained. This characteristic makes N2V particularly suitable for denoising microscopy images, where obtaining clean reference images can be challenging. Moreover, N2V has been shown to perform competitively against other denoising methods that do have access to clean targets or noisy pairs, despite its more limited training data requirements.
 
 ## Hierarchical DivNoising (HDN)
 
@@ -53,6 +51,25 @@ HDN organizes the denoising process into multiple levels, allowing it to capture
 
 ### Advantages
 The hierarchical structure of HDN facilitates better contextual understanding and feature extraction compared to traditional methods. This can lead to better results in scenarios with significant noise levels or complex image structures, making HDN a valuable tool in applications requiring high-quality image restoration.
+
+
+## DeepCAD
+
+TODO
+
+## CellMincer
+
+### Overview
+
+CellMincer is a self-supervised framework designed to work with Voltage Imaging. designed specifically for denoising voltage imaging datasets.
+CellMincer operates by masking and predicting sparse sets of pixels over short temporal windows. This allows the model to leverage both the unique information from individual frames and the context from neighboring frames. 
+
+### Details
+The architecture consists of a frame-wise 2D U-Net module for spatial feature extraction followed by a pixelwise 1D convolutional module for temporal data processing, optimizing both spatial and temporal correlations of the data.
+
+The authors report that the performance of CellMincer on Calcium Imaging data are degraded compared to those of DeepCAD. This may be due to the different scales in temporal dynamics between Voltage and Calcium imaging. Nonetheless, this frameword remains a direction worth investigating.
+
+
 
 
 

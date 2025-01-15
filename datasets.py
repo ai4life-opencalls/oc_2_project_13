@@ -8,13 +8,13 @@ import numpy as np
 
 
 class CalciumImagingDataset(Dataset):
-    def __init__(self, data_path, patch_size=64):
+    def __init__(self, data_path, patch_size=64, normalize=True):
         super().__init__()
         self.patch_size = patch_size
         self.data = self.load_dataset(data_path)
         N, T, H, W = self.data.data.shape
         self.data = self.data.reshape(-1, H, W)
-
+        self.normalize = normalize
         self.dataset_mean = self.data.mean()
         self.dataset_std = self.data.std()
 
@@ -26,8 +26,11 @@ class CalciumImagingDataset(Dataset):
         # return the patch at the location (patch_size, patch_size)
         # do soiome normalization
         # 
-        return (self.data[n_idx, h:h+self.patch_size, w:w+self.patch_size] - self.dataset_mean) / self.dataset_std, 0.0
-    
+        if self.normalize:
+            return self.data[n_idx, h:h+self.patch_size, w:w+self.patch_size] - self.dataset_mean, 0.0
+        else:
+            return self.data[n_idx, h:h+self.patch_size, w:w+self.patch_size], 0.0
+
     def patch_location(self, index:int)-> Tuple[int, int, int]:
         # it just ignores the index and returns a random location
         n_idx = np.random.randint(0,len(self.data))

@@ -23,6 +23,7 @@ def train_noise_models(signal_folder: str,
                        gmm_batch_size: int = 250000,
                        gmm_clip_perc: float = 0.1,
                        gmm_min_sigma: float = 50,
+                       normalize_data: bool = False,
                        device: str = 'cuda'):
     
     """
@@ -58,6 +59,8 @@ def train_noise_models(signal_folder: str,
                 Minimum sigma for the GMM
             device: str
                 Device to use for training    
+            normalize_data: str
+                Whether to normalize data before training.
     """
 
     noise_model_folder = Path(models_folder).joinpath(experiment_name, "noise_model")
@@ -91,6 +94,10 @@ def train_noise_models(signal_folder: str,
     signal = np.concatenate(signal, axis=0)
     denoised = np.concatenate(denoised, axis=0)
     # Here signal and denoised are 1D arrays with all the pixels concatenated
+
+    if normalize_data:
+        signal = (signal - signal.mean()) / signal.std() 
+        denoised = (denoised - denoised.mean()) / denoised.std()
 
     minval, maxval = signal.min(), signal.max()
 
@@ -156,6 +163,7 @@ if __name__ == "__main__":
     parser.add_argument('--gmm_clip_perc', type=float, default=0.1, help='Percentage to clip for the GMM')
     parser.add_argument('--gmm_min_sigma', type=float, default=50, help='Minimum sigma for the GMM')
     parser.add_argument('--random_perc', type=float, default=1.0, help='Percentage of the dataset to use for training')
+    parser.add_argument('--normalize_data', action="store_true", help="Whether to normalize data before training")
     parser.add_argument('--device', type=str, default='cuda', help='Device to use for training')
 
     args = parser.parse_args()
@@ -163,7 +171,6 @@ if __name__ == "__main__":
     log.setLevel(args.level)
     # Load env vars and args overrides into ENV dictionary
     load_env(args.env, parser_args=args)
-    # FIXME: FOR SOME REASONS ON HPC BATCH COMPUTATION HALTS BETWEEN LAST INSTRUCTION OF load_env AND THE FOLLOWING PRINT (???) DOES NOT HAPPEN IN HPC INTERACTIVE
     print("env loaded", flush=True)
 
     train_noise_models( 
@@ -180,7 +187,8 @@ if __name__ == "__main__":
                         gmm_learning_rate=args.gmm_learning_rate,
                         gmm_batch_size=args.gmm_batch_size,
                         gmm_clip_perc=args.gmm_clip_perc,
-                        gmm_min_sigma=args.gmm_min_sigma    
+                        gmm_min_sigma=args.gmm_min_sigma,
+                        normalize_data=args.normalize_data
                      )
 
     
