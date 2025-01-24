@@ -7,11 +7,31 @@ from pathlib import Path
 import numpy as np
 
 
+def load_dataset(data_path, stack=True):
+    """
+        Load all '*.tif' files contained in the given folder.
+
+        Args: 
+            - data_path (Path or str): Path of the folder containing the files
+            - stack (bool): If true, returns a numpy array with the images stacked together. Otherwise returns a list.
+        
+        Returns:
+            - (List or np.ndarray): Loaded images. If concat is false, a List of ndarrays. Otherwise, a single ndarray of shape (N, H, W) or (N, C, H, W).
+    """
+    data = list()
+    for p in list(Path(data_path).rglob("*.tif")):
+        data.append(tifffile.imread(p))
+    if stack:
+        return np.array(data)
+    else:
+        return data
+
+
 class CalciumImagingDataset(Dataset):
     def __init__(self, data_path, patch_size=64, normalize=True):
         super().__init__()
         self.patch_size = patch_size
-        self.data = self.load_dataset(data_path)
+        self.data = load_dataset(data_path, stack=True)
         N, T, H, W = self.data.data.shape
         self.data = self.data.reshape(-1, H, W)
         self.normalize = normalize
@@ -39,11 +59,7 @@ class CalciumImagingDataset(Dataset):
         w = np.random.randint(0, self.data.shape[2]-self.patch_size)
         return (n_idx, h, w)
 
-    def load_dataset(self, data_path):
-        data = list()
-        for p in list(Path(data_path).rglob("*.tif")):
-            data.append(tifffile.imread(p))
-        return np.array(data)
+    
 
 
 def make_predtiler_dataset(data_shape, tile_size, patch_size):    

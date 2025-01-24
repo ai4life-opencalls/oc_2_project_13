@@ -2,6 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import zoom
 import imageio
+from typing import Literal
+import ipywidgets as widgets
+from IPython.display import display
 
 def create_gif_from_numpy(array, output_file, scale_factor=1.0, frame_skip=10, fps=10):
     """
@@ -48,3 +51,38 @@ def create_gif_from_numpy(array, output_file, scale_factor=1.0, frame_skip=10, f
     
     # Create GIF using imageio
     imageio.mimsave(output_file, frames, fps=fps)
+
+
+
+def display_image_with_slider(images, vlim: Literal["stack", "frame", "all"]="stack", titles: np.ndarray = None):
+    """
+        Shows a set of images side-by-side with a common slider for the time dimension.
+        Args:
+            - images: A np.ndarray of images of shape [N, T, H, W] or [T, H, W]
+
+    """
+    if images.ndim == 3:
+        images = images[None, ...]
+
+    N, T, Y, X = images.shape
+    all_vmin = [i.min() for i in images] if vlim == "stack" else [images.min() for i in range(N)] 
+    all_vmax = [i.max() for i in images] if vlim == "stack" else [images.max() for i in range(N)]
+
+    def update_image(t):
+        fig, axs = plt.subplots(1, N, squeeze=False, figsize=(N*10, 10))
+        for n, ax in enumerate(axs[0]):
+            img_to_show = images[n, t]
+            if vlim == "frame":
+                vmin, vmax = img_to_show.min(), img_to_show.max()
+            else:
+                vmin, vmax = all_vmin[n], all_vmax[n]
+            ax.imshow(img_to_show, cmap='gray', vmin=vmin, vmax=vmax)
+
+            if titles is not None:
+                ax.set_title(titles[n])
+                
+        fig.tight_layout()
+        plt.show()
+
+    slider = widgets.IntSlider(min=0, max=T-1, step=1, description='T')
+    widgets.interact(update_image, t=slider)
