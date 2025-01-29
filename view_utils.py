@@ -32,7 +32,7 @@ def create_gif_from_numpy(array, output_file, scale_factor=1.0, frame_skip=10, f
 
         # Plot the frame using matplotlib
         fig, ax = plt.subplots(figsize=(frame.shape[1] / 100, frame.shape[0] / 100), dpi=100)
-        ax.imshow(frame)
+        ax.imshow(frame, vmin=array.min(), vmax=array.max(), cmap='gray')
         ax.axis('off')  # Turn off the axis
 
         # Adjust the figure layout to remove margins
@@ -54,7 +54,7 @@ def create_gif_from_numpy(array, output_file, scale_factor=1.0, frame_skip=10, f
 
 
 
-def display_image_with_slider(images, vlim: Literal["stack", "frame", "all"]="stack", titles: np.ndarray = None):
+def display_image_with_slider(images, vlim: Literal["stack", "frame", "all"]="stack", titles: np.ndarray = None, **fig_kw):
     """
         Shows a set of images side-by-side with a common slider for the time dimension.
         Args:
@@ -69,7 +69,7 @@ def display_image_with_slider(images, vlim: Literal["stack", "frame", "all"]="st
     all_vmax = [i.max() for i in images] if vlim == "stack" else [images.max() for i in range(N)]
 
     def update_image(t):
-        fig, axs = plt.subplots(1, N, squeeze=False, figsize=(N*10, 10))
+        fig, axs = plt.subplots(1, N, squeeze=False, **fig_kw)
         for n, ax in enumerate(axs[0]):
             img_to_show = images[n, t]
             if vlim == "frame":
@@ -86,3 +86,4 @@ def display_image_with_slider(images, vlim: Literal["stack", "frame", "all"]="st
 
     slider = widgets.IntSlider(min=0, max=T-1, step=1, description='T')
     widgets.interact(update_image, t=slider)
+
