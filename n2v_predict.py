@@ -80,7 +80,7 @@ def predict_n2v(
     # Variables and Paths
     model_folder = os.path.join(models_folder, experiment_name)
     ckpt_path = os.path.join(model_folder, 'checkpoints', model_ckpt)
-    output_path = os.path.join(output_folder, experiment_name)
+    output_path = os.path.join(output_folder, experiment_name, dataset_name)
     os.makedirs(output_path, exist_ok=True)
 
     # instantiate a CAREamist
