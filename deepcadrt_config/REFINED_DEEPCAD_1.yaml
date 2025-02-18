@@ -1,0 +1,41 @@
+train_params_dict:
+  # dataset dependent parameters
+  patch_x: 64                                                                                # the width of 3D patches
+  patch_y: 64                                                                                # the height of 3D patches
+  patch_t: 64                                                                                # the time dimension (frames) of 3D patches
+  overlap_factor: 0.33                                                                        # the factor for image intensity scaling
+  scale_factor: 1                                                                            # the factor for image intensity scaling
+  select_img_num: 1009                                                                       # select the number of images used for training (use 2000 frames in colab)
+  train_datasets_size: 12000                                                                 # datasets size for training (how many 3D patches)
+  datasets_path: "/scratch/edoardo.giacomello/calcium_imaging/refined/train"            # folder containing files for training
+  pth_dir: "models/REFINED_DEEPCAD_1/"                                                   # the path for pth file and result images
+
+  # network related parameters
+  n_epochs: 10                                                                               # the number of training epochs
+  lr: 0.00005                                                                                # learning rate
+  b1: 0.5                                                                                    # Adam: beta1
+  b2: 0.999                                                                                  # Adam: beta2
+  fmap: 16                                                                                   # model complexity
+  GPU: "0"                                                                                   # GPU index
+  num_workers: 0                                                                             # if you use Windows system, set this to 0.
+  visualize_images_per_epoch: False                                                          # whether to show result images after each epoch
+  save_test_images_per_epoch: True                                                           # whether to save result images after each epoch
+  colab_display: False
+
+test_params_dict:
+    # dataset dependent parameters
+  patch_x: 64                                                                                # the width of 3D patches
+  patch_y: 64                                                                                # the height of 3D patches
+  patch_t: 64                                                                                # the time dimension (frames) of 3D patches
+  overlap_factor: 0.33                                                                       # the factor for image intensity scaling
+  scale_factor: 1                                                                            # the factor for image intensity scaling
+  test_datasize: 1009                                                                        # the number of frames to be tested (test all frames if the number exceeds the total number of frames in a .tif file)
+  dataset_path: "/scratch/edoardo.giacomello/calcium_imaging/refined/test"                   # folder containing files for testing
+  pth_dir: "models/REFINED_DEEPCAD_1/"                                                       # the path for pth file and result images
+  denoise_model: "models/REFINED_DEEPCAD_1/last_model"                                       # A folder containing pth models to be tested
+  output_dir: "output/REFINED_DEEPCAD_1/"                                                    # result file root path
+  fmap: 16                                                                                   # model complexity
+  GPU: "0"                                                                                   # GPU index
+  num_workers: 0                                                                             # if you use Windows system, set this to 0.
+  visualize_images_per_epoch: False                                                          # whether to show result images after each epoch
+  
