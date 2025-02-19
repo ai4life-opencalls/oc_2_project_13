@@ -94,13 +94,21 @@ def predict_n2v(
 
         print(f"Predicting file {tiff_path_in}")
         tiff_in = tifffile.imread(tiff_path_in)
-        tiff_out = tiled_prediction(
-                                    image=tiff_in,
-                                    model=careamist,
-                                    patch_shape=(patch_size_z, patch_size, patch_size) if patch_size_z is not None else (patch_size, patch_size),
-                                    patch_batch_size=batch_size,
-                                    axes=axes
-                                    )
+        tile_size = (patch_size_z, patch_size, patch_size) if patch_size_z is not None else (patch_size, patch_size)
+
+        tiff_out = careamist.predict(source=tiff_in,
+                                    data_type="array",
+                                    tile_size=tile_size,
+                                    tile_overlap=[int(3/4*ts) for ts in tile_size],
+                                    batch_size=batch_size,
+                                    axes=axes)
+        # tiff_out = tiled_prediction(
+        #                             image=tiff_in,
+        #                             model=careamist,
+        #                             patch_shape=(patch_size_z, patch_size, patch_size) if patch_size_z is not None else (patch_size, patch_size),
+        #                             patch_batch_size=batch_size,
+        #                             axes=axes
+        #                             )
 
         tiff_out = np.squeeze(tiff_out)
 
