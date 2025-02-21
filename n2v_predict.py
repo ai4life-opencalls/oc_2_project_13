@@ -15,32 +15,47 @@ from careamics.prediction_utils import stitch_prediction_single
 from typing import List
 import logging
 
+
 def tiled_prediction(image: np.ndarray, model, patch_shape: List[int]=(16, 64, 64), patch_batch_size:int = 8, axes="ZYX"):
     """
         N2V batched patch-wise prediction.
     """
 
-    tiles_generator = tiling.extract_tiles(arr=image[None, None, ...], tile_size=patch_shape, overlaps=list(p//2 + 1 for p in patch_shape))
-    
-    pred_patches = list()
-    patch_info = list()
-    current_batch = list()
+    model_2d = len(patch_shape) == 2
 
-    for current_tile, current_info in tiles_generator:
-        patch_info.append(current_info)
-        current_batch.append(current_tile)
+    if model_2d:
+        # Predict frame by frame to avoid OOM
+        pred_frames = list()
+        for batch_start in range(0, image.shape[0], patch_batch_size):
+            print(f"Predicting batch {batch_start} to {min(batch_start + patch_batch_size, image.shape[0])} of {image.shape[0]}")
+            batch_end = min(batch_start + patch_batch_size, image.shape[0])
+            current_batch = image[batch_start:batch_end]
+            pred_batch = model.predict(current_batch, data_type='array', axes=axes, batch_size=current_batch.shape[0])
+            pred_frames += pred_batch
+        return np.concat(pred_frames, axis=1).squeeze()
 
-        # Processing batch (if full)
-        if len(current_batch) == patch_batch_size:
-            pred_patches += model.predict(np.concatenate(current_batch), data_type='array', axes=f'S{axes}')
-            current_batch = []  # Create new empty batch 
-            log.debug(f"Predicted {len(pred_patches)} tiles...")
-    # Process last batch if is n_tiles % batch_size > 0
-    if len(current_batch) > 0:
-        pred_patches += model.predict(np.concatenate(current_batch), data_type='array', axes=f'S{axes}')
-        current_batch = []  # Create new empty batch
-        log.debug(f"Predicted {len(pred_patches)} tile. Done.")
+    else:
 
+        tiles_generator = tiling.extract_tiles(arr=image[None, None, ...], tile_size=patch_shape, overlaps=[int(3/4*ts) for ts in patch_shape])
+        
+        pred_patches = list()
+        patch_info = list()
+        current_batch = list()
+        
+        for current_tile, current_info in tiles_generator:
+            patch_info.append(current_info)
+            current_batch.append(current_tile)
+            predict_axes = f'SZYX' # if 'Z' in axes or 'T' in axes else f'CYX'
+            # Processing batch (if full)
+            if len(current_batch) == patch_batch_size:
+                pred_patches += model.predict(np.concatenate(current_batch), data_type='array', axes=predict_axes)
+                current_batch = []  # Create new empty batch 
+                log.debug(f"Predicted {len(pred_patches)} tiles...")
+        # Process last batch if is n_tiles % batch_size > 0
+        if len(current_batch) > 0:
+            pred_patches += model.predict(np.concatenate(current_batch), data_type='array', axes=predict_axes)
+            current_batch = []  # Create new empty batch
+            log.debug(f"Predicted {len(pred_patches)} tile. Done.")
     pred_patches = list(np.array(pred_patches)[:, None, ...])
     return stitch_prediction_single(pred_patches, patch_info)
 
@@ -57,6 +72,7 @@ def predict_n2v(
          batch_size=16,
          axes="YX",
          model_ckpt='last.ckpt',
+         use_custom_tiled_prediction=False
          ):
     
     """
@@ -74,6 +90,7 @@ def predict_n2v(
             - batch_size
             - axes: Axes argument that will be passed to the model. Must match with those used during training.
             - model_ckpt: checkpoint that will be used in the `checkpoints` folder. defaults to last.ckpt
+            - use_custom_tiled_prediction: If True, uses a custom tiled prediction function. May help if the standard prediction goes OOM.
 
     """
     
@@ -96,20 +113,23 @@ def predict_n2v(
         tiff_in = tifffile.imread(tiff_path_in)
         tile_size = (patch_size_z, patch_size, patch_size) if patch_size_z is not None else (patch_size, patch_size)
 
-        tiff_out = careamist.predict(source=tiff_in,
+        
+        if use_custom_tiled_prediction:
+            tiff_out = tiled_prediction(
+                                        image=tiff_in,
+                                        model=careamist,
+                                        patch_shape=(patch_size_z, patch_size, patch_size) if patch_size_z is not None else (patch_size, patch_size),
+                                        patch_batch_size=batch_size,
+                                        axes=axes
+                                        )
+        else:
+            tiff_out = careamist.predict(source=tiff_in,
                                     data_type="array",
                                     tile_size=tile_size,
                                     tile_overlap=[int(3/4*ts) for ts in tile_size],
                                     batch_size=batch_size,
                                     axes=axes)
-        # tiff_out = tiled_prediction(
-        #                             image=tiff_in,
-        #                             model=careamist,
-        #                             patch_shape=(patch_size_z, patch_size, patch_size) if patch_size_z is not None else (patch_size, patch_size),
-        #                             patch_batch_size=batch_size,
-        #                             axes=axes
-        #                             )
-
+            
         tiff_out = np.squeeze(tiff_out)
 
         if save_outputs:
@@ -131,6 +151,7 @@ if __name__ == "__main__":
     parser.add_argument('--patch_size', type=int, default=64, help="Patch spatial dimension")
     parser.add_argument('--batch_size', type=int, default=16, help="Batch Size")
     parser.add_argument('--axes', type=str, default="YX", help="Axes used to interpret the TIFF files.")
+    parser.add_argument('--use_custom_tiled_prediction', action='store_true', help="Use custom tiled prediction function instead of CAREamics built-in. May help if the standard prediction goes OOM.")
 
     args = parser.parse_args()
     log.setLevel(args.level)
@@ -145,7 +166,8 @@ if __name__ == "__main__":
                 patch_size=args.patch_size,
                 batch_size=args.batch_size,
                 axes=args.axes,
-                model_ckpt=args.ckpt
+                model_ckpt=args.ckpt,
+                use_custom_tiled_prediction=args.use_custom_tiled_prediction
                 )
     for _ in pred_gen:
         log.info("Done.")

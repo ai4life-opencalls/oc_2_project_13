@@ -40,13 +40,20 @@ def predict_n2n(
     
     for in_data_path in [train_dataset_path, val_dataset_path, test_dataset_path]:
         # Appends ['train', 'val', 'test'] to the output path
+        if not Path(in_data_path).exists():
+            log.warning(f"Path {in_data_path} does not exist. Skipping...")
+            continue
         out_data_path = exp_output_folder.joinpath(in_data_path.name)
 
         for tiff_fp in list(Path(in_data_path).rglob("*.tif")):
             img = tifffile.imread(tiff_fp)
-            prediction = careamist.predict(source=img, 
-                                           tile_size=(patch_size_z, patch_size, patch_size) if patch_size_z is not None else (patch_size, patch_size), 
-                                           batch_size=batch_size)
+            tile_size = (patch_size_z, patch_size, patch_size) if patch_size_z is not None else (patch_size, patch_size)
+            prediction = careamist.predict(source=img,
+                                           data_type="array",
+                                            tile_size=tile_size,
+                                            tile_overlap=[int(3/4*ts) for ts in tile_size],
+                                            batch_size=batch_size,
+                                            axes="SYX")
             prediction = np.array(prediction).squeeze()
             # Save the raw prediciton
             out_tiff_fp = out_data_path.joinpath(tiff_fp.name)

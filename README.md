@@ -192,6 +192,8 @@ For the MOUSENEU_LP dataset, we compared the performance of Noise2Noise, Noise2V
 Both from quantitative analysis and visual inspection, DeepCAD-RT outperformed Noise2Noise and Noise2Void on the MOUSENEU_LP dataset.
 In particular, Noise2Noise and Noise2Void fail to capture the underlying signal with the parameter used for training. DeepCAD-RT, on the other hand, was able to denoise the data effectively, - providing a cleaner output compared to the noisy input - by using the default parameters provided by the authors.
 
+The 3D version of Noise2Void is currently being tested on the MOUSENEU_LP dataset due to high memory consumption during prediction.
+
 ### Experiments on REFINED Dataset
 
 **NOTICE**: The results reported below are gif animations intended to provide a visual comparison of the denoising performance of each algorithm. For a detailed comparison of the results obtained with each algorithm, please refer to the respective experiment notebooks. Previews are generated from the test video of the REFINED dataset (frame skip: 20, resolution: 10%). Input and output may appear out of sync due to the loading time of the gif.
@@ -220,15 +222,6 @@ This exploratory analysis has provided valuable insights into the performance of
 In conclusion, this exploratory analysis has provided valuable insights into the performance of various denoising algorithms on Calcium Imaging data. While DeepCAD-RT demonstrated robust performance across different datasets, Noise2Noise and Noise2Void showed varying levels of effectiveness depending on the dataset characteristics. The study underscores the importance of tailoring denoising algorithms to the specific properties of the data, such as noise levels and signal-to-noise ratios.
 
 The challenges encountered in implementing some advanced algorithms highlight the need for further development and refinement to enhance their usability and performance. Additionally, the promising results obtained with 3D Noise2Void suggest that further investigation into 3D denoising techniques could yield significant improvements in image quality. More generally, this project emphasizes the need for research and development in the field of Calcium Imaging denoising, particularly under conditions of limited training data and high noise levels. We want to highlight the importance of collaboration between researchers and developers to address the challenges associated with implementing advanced denoising algorithms and to facilitate the adoption of these tools by the scientific community.
-
-
-
-
-
-
-
-
-
 
 ### Bibliography
 
