@@ -12,26 +12,28 @@ This repository provides code for evaluating multiple denoising algorithms appli
 
 The primary objective of this study is to identify optimal strategies for denoising Calcium Imaging data under conditions of limited training data, high noise levels, and the absence of clean reference images. Given these constraints, this project serves as an exploratory analysis rather than an exhaustive benchmarking of denoising methodologies for Calcium Imaging.
 
-The denoising algorithms considered in this study include Noise2Noise (N2N), Noise2Void (N2V), Hierarchical DivNoising (HDN), DeepCAD-RT, and CellMincer. We put particular emphasi on accessibility and ease of implementation, rather than denoising performances alone. To facilitate adoption by researchers, the project prioritizes algorithms with user-friendly workflows and provides detailed instructions and modifications for codebases requiring additional configuration.
+The denoising algorithms considered in this study include Noise2Noise (N2N), Noise2Void (N2V), Hierarchical DivNoising (HDN), DeepCAD-RT, and CellMincer. We put particular emphasis on accessibility and ease of implementation, rather than denoising performances alone. To facilitate adoption by researchers, the project prioritizes algorithms with user-friendly workflows and provides detailed instructions and modifications for codebases requiring additional configuration.
 
 For each completed experiment, we supply a set of Jupyter notebooks and standalone scripts that can be readily utilized and adapted to specific research needs.
 
 ## Getting started
 
 Due to the computational requirements of some of the algoritms used, part of the code hosted in this repository has been designed to run as standalone scripts (e.g., on an HPC or *headless* machine).
-Tutorials notebooks for the most relevant experiments are also provided. They are named as the experiment code reported in the following sections.
+Notebooks for the most relevant experiments are also provided when relevant. They are named as the experiment code reported in the following sections.
 
 ### Environment setup
+
+To manage different running environments (e.g., different machines with different mounts) we use a `.env` file.
 
 Create a file '.env' in the current directory with the following environment variables:
 
 ```bash
-    DATASET_FOLDER='your_path_to/calcium_imaging/' # Root folder of this repository
+    DATASET_FOLDER='your_path_to/your_dataset/'
     OUTPUT_FOLDER='output/'
     MODELS_FOLDER='models/'
 ```
 
-you can also specify multiple `.custom_envs` and pass them to the script using `-e .custom_env`.
+you can also specify multiple `.custom_envs` and pass them to the different scripts using `-e .custom_env`. Variables in the env files can be overridden by passing the same variables in the command line. For example `python n2v_train.py -e .env DATASET_FOLDER='your_path_to/specific_dataset/'` will override the `DATASET_FOLDER` variable in the `.env` file for that particular execution.
 
 # Dataset and pre-processing
 
@@ -39,21 +41,20 @@ In this project we used three different datasets:
  Two of them were provided by the applicants and one is the **Mouse Neurites dataset**, [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6299076.svg)](https://doi.org/10.5281/zenodo.6299076) part of the [DeepCAD-RT](https://cabooster.github.io/DeepCAD-RT/Datasets/) repository.
 
 ## HUVEC_IMG and HUVEC_VID datasets
-The dataset used in this project has been provided by researchers at McGill University in the context of AI4Life Open Challenges 2024.
-
-The dataset consisted of HUVEC cells with GCaMP6s. 20ms exposure, 20% lamp intensity, stream acquisition with widefield imaging. 
+The main dataset used in this project has been provided by researchers at McGill University in the context of AI4Life Open Challenges 2024. The dataset consided of HUVEC cells, acquired using a widefield microscope with a 20ms exposure time and 20% lamp intensity. 
 
 The original dataset consisted of three folders, one named "DeepCAD", containing 30 1009x1024x1024 videos, one named "Test Data", containing 30 1009x1024x1024 videos, and one named "NIDDL", containing 163 Low-SNR and 163 High-SNR paired frames. Both DeepCAD and NIDDL are made from a combination of 3 different experiments made with the same imaging conditions. 
 
-Please notice that the name of the folders are NOT related to the respective algorithms, but to the experiments that were performed by the applicants. To avoid confusion, we renamed the "DeepCAD" folder to **HUVEC_VID**, and the NIDDL folder to **HUVEC_IMG**. The "Test Data" folder was kept as is.
+Please notice that the name of the folders are NOT related to the respective algorithms, but to preliminary experiments that were performed by the applicants. To avoid confusion, we renamed the "DeepCAD" folder to **HUVEC_VID**, and the NIDDL folder to **HUVEC_IMG**. The "Test Data" folder was kept as is.
 
 ### Data Pre-processing
 
-We used the **HUVEC_IMG** for performing some hyperparameter tuning and testing the codebase, while data from HUVEC_VID and "Test Data" was assigned for main experiments. 
+We used the **HUVEC_IMG** for performing hyperparameter tuning and testing the codebase, while data from HUVEC_VID and "Test Data" was assigned for main experiments. 
 Additionally, the applicants reported to have previously subtracted the average microscope background and provided a single frame of noise. Before proceeding with the experiments, we added back the background noise to retrieve RAW data and ensure consistency between the experiments.
 
 ## REFINED Dataset
-As detailed in the experiment map in the following section, we discovered that most of the videos we received were affected by an issue during acquisition issue that caused the dynamic range of the images to be overly compressed (e.g., only 4-5 pixel intensities were used to express the signal). As the applicants couldn't provide corrected data, we agreed to proceed with the available data.
+As detailed in the experiment map in the following section, we discovered that most of the videos we received were affected by an issue during acquisition issue that caused the dynamic range of the images to be overly compressed (e.g., only 4-5 pixel intensities were used to express the signal). This problem 
+As the applicants couldn't provide corrected data, we agreed to proceed with the available data.
 In particular, we proceeded to manually select videos that were less affected by this issue, resulting in the following **REFINED** dataset, (composed of only images originally from the "TestData" folder):
 
 ```
@@ -78,7 +79,7 @@ To build the MOUSENEU_LP dataset, we selected two videos at 66mW power level, on
 
 ## Noise2Noise (N2N)
 
-[Paper](https://arxiv.org/abs/1803.04189)
+[Paper](https://arxiv.org/abs/1803.04189) | [Code](https://careamics.github.io/)
 
 ### Overview
 
@@ -91,7 +92,7 @@ In our experiments, due to the lack of clean reference images, we followed a sim
 
 ## Noise2Void (N2V)
 
-![Paper](https://arxiv.org/abs/1811.10980)
+[Paper](https://arxiv.org/abs/1811.10980) | [Code](https://careamics.github.io/)
 
 ### Overview
 
@@ -104,6 +105,8 @@ During training, a mask prevents the model from accessing the value of the centr
 In this repository, we used both 2D and 3D U-Net architectures for denoising Calcium Imaging data.
 
 ## Hierarchical DivNoising (HDN)
+
+[Paper](https://www.nature.com/articles/s41592-021-01225-0) | [Code](https://github.com/juglab/HDN)
 
 ### Overview
 Hierarchical DivNoising (HDN) is another advanced approach in image denoising that builds on concepts similar to N2V but introduces a hierarchical structure for improved performance. HDN is also capable to remove spatially-correlated noise, however this procedure requires a pre-processing step in which noise is estimated from a noisy observation and a high SNR signal.
@@ -158,7 +161,7 @@ The implementations of Noise2Noise (N2N) and Noise2Void (N2V) utilized in this s
 
 For a detailed comparison of the results obtained with each algorithm, please refer to the respective experiment notebooks. A visual comparison of the denoising performance of each algorithm is provided below.
 
-### NIDDL Dataset
+### HUVEC_IMG ("NIDDL") Dataset
 
 | Experiment Name | Patch Size | Epochs | Mean SI_PSNR Improvement | Std SI_PSNR Improvement | Notes        |
 |-----------------|------------|--------|--------------------------|-------------------------|--------------|
@@ -185,11 +188,11 @@ For the MOUSENEU_LP dataset, we compared the performance of Noise2Noise, Noise2V
 | train   | MOUSENEU_LP_N2N_1     | 0.490 ± 0.026 | 0.226 ± 0.019 | 23.458 ± 0.200 | 23.973 ± 0.552 |
 | train   | MOUSENEU_LP_N2V_1     | 0.489 ± 0.027 | 0.190 ± 0.016 | 23.678 ± 0.214 | 23.496 ± 0.538 |
 | *val*     | *lowSNR*                | *0.411 ± 0.020* | *0.174 ± 0.014* | *20.431 ± 0.150* | *22.330 ± 0.477* |
-| val     | **MOUSENEU_LP_DEEPCAD_1** | **0.421 ± 0.020** |** 0.285 ± 0.020** | **20.464 ± 0.151** | **23.713 ± 0.525** |
+| val     | **MOUSENEU_LP_DEEPCAD_1** | **0.421 ± 0.020** | **0.285 ± 0.020** | **20.464 ± 0.151** | **23.713 ± 0.525** |
 | val     | MOUSENEU_LP_N2N_1     | 0.415 ± 0.020 | 0.206 ± 0.016 | 20.414 ± 0.159 | 22.522 ± 0.480 |
 | val     | MOUSENEU_LP_N2V_1     | 0.415 ± 0.020 | 0.186 ± 0.014 | 20.594 ± 0.159 | 22.297 ± 0.476 |
 
-Both from quantitative analysis and visual inspection, DeepCAD-RT outperformed Noise2Noise and Noise2Void on the MOUSENEU_LP dataset.
+Both from quantitative analysis and visual inspection, DeepCAD-RT outperformed Noise2Noise and Noise2Void on the MOUSENEU_LP dataset. \
 In particular, Noise2Noise and Noise2Void fail to capture the underlying signal with the parameter used for training. DeepCAD-RT, on the other hand, was able to denoise the data effectively, - providing a cleaner output compared to the noisy input - by using the default parameters provided by the authors.
 
 The 3D version of Noise2Void is currently being tested on the MOUSENEU_LP dataset due to high memory consumption during prediction.
@@ -198,11 +201,14 @@ The 3D version of Noise2Void is currently being tested on the MOUSENEU_LP datase
 
 **NOTICE**: The results reported below are gif animations intended to provide a visual comparison of the denoising performance of each algorithm. For a detailed comparison of the results obtained with each algorithm, please refer to the respective experiment notebooks. Previews are generated from the test video of the REFINED dataset (frame skip: 20, resolution: 10%). Input and output may appear out of sync due to the loading time of the gif.
 
-| Input | REFINED_N2N_1 | REFINED_N2N_1 2D N2V with no background microscope noise |
+| Model | Description | Preview |
 |-----------------|------------|------------|
-| ![Input (test dataset)](./docs/experiments_preview/test_input.gif)  | ![REFINED_N2V_1 (test dataset)](./docs/experiments_preview/REFINED_N2N_1.gif) | ![REFINED_N2V_1_NO_AVERAGE(test dataset)](./docs/experiments_preview/REFINED_N2N_1_noavg.gif) | 
-| Input | REFINED_N2V_3 (3D N2V) | REFINED_N2V_3 3D N2V with no background microscope noise |
-| ![Input (test dataset)](./docs/experiments_preview/test_input.gif)  | ![REFINED_N2V_3 (test dataset)](./docs/experiments_preview/REFINED_N2V_3.gif) | ![REFINED_N2V_3_NO_AVERAGE(test dataset)](./docs/experiments_preview/REFINED_N2V_3_noavg.gif) | 
+| Input | Test Set | ![](docs/experiments_preview/REFINED/test/test_input.gif) |
+| REFINED_N2N_1 | Test Set | ![](docs/experiments_preview/REFINED/test/REFINED_N2N_1.gif) |
+| REFINED_N2V_1 | Test Set | ![](docs/experiments_preview/REFINED/test/REFINED_N2V_1.gif) |
+| REFINED_N2V_3 | Test Set | ![](docs/experiments_preview/REFINED/test/REFINED_N2V_3.gif) |
+| REFINED_DEEPCAD_1 | Test Set | ![](docs/experiments_preview/REFINED/test/REFINED_DEEPCAD_1.gif) |
+
 
 By performing a visual inspection of the results we can observe that the N2N and the N2V algorithms were able to denoise the data effectively, in contrast to the results obtained on the MOUSENEU_LP dataset. DeepCAD-RT still produce good results. A qualitative comparison of the results shows that N2N tends to produce smoother outputs with respect to the others. When comparing 3D Noise2Void with DeepCAD-RT, we can observe that both algorithms were able to denoise the data effectively, with Noise2Void producing an output with slighly more contrast and level of detail. However, due to the lack of a clean reference, it is difficult to assess the fidelity of the denoised data to the original signal.
 
@@ -212,10 +218,23 @@ As stated in the previous sections, the main objective of this project was to id
 
 #### User-friendliness and ease of implementation
 In our experiments, we also planned to include more advanced denoising algorithms such as Hierarchical DivNoising and CellMincer. However, we had to face some issues during the implementation of these algorithms, which prevented us from including them in the final analysis and forced us to focus on the algorithms that were easier to implement. During our efforts in implementing the codebases, we allocated a limited amount of time to fix eventual issues that arose for each algorithm. However, our aim was to provide a comprehensive overview of the denoising algorithms with minimal modifications to the original codebases.
-Specifically, we encountered difficulties in setting up the Hierarchical DivNoising (HDN) algorithm due to runtime errors that affected the fitting of noise models with this kind of data. After attempting to fix the issues, we found the training of the model to be numerically unstable for this dataset. We contacted the authors of CAREamics to request assistance in resolving the issue and were informed that the developers are currently working to enable the future implementation of HDN in their codebase. As a result, we were unable to include HDN in the current analysis, but we envision that this results may be produced as soon as the model is available. For CellMincer, we encountered issues with the import of the package, which initially prevented us from running the code. After trying to reach the authors for support on GitHub, we were able to solve the issue and run the code by patching the package manually. However, after running the code, we found that CellMincer was not able to produce denoised outputs for our REFINED dataset. While this is in line with the authors' report that CellMincer may not always perform well on Calcium Imaging data, we are confident that with further modifications to the model architecture, it could represent a valuable tool for denoising Calcium Imaging data. Algorithms in the CAREamics framework (i.e., N2N and N2V) have proven to be generally easy to train and use also on desktop computers, however they sometimes required an unexpectedly high amount of RAM during the prediction phase, especially on the MOUSENEU_LP dataset or with 3D models. This may be a limitation for researchers with limited computational resources. CAREamics authors are aware of this issue and are working on a solution to mitigate this problem. Lastly, we found that the DeepCAD-RT algorithm was the most user-friendly and easy to implement, providing good denoising performances on both the MOUSENEU_LP and REFINED datasets. DeepCAD-RT is in fact an iterative improvement of the original DeepCAD algorithm, meant to provide real-time denoising capabilities for Calcium Imaging data. 
+
+Specifically, we encountered difficulties in setting up the Hierarchical DivNoising (HDN) algorithm due to runtime errors that affected the fitting of noise models with this kind of data. After attempting to fix the issues, we found the training of the model to be numerically unstable for this dataset. We discussed the issue with the authors of CAREamics to request assistance and were informed that the developers are currently working to enable the future implementation of HDN in their codebase. 
+As a result, we were unable to include HDN in the current analysis, but we envision that this results may be produced as soon as the model is available. 
+
+For CellMincer, we encountered issues with the import of the package, which initially prevented us from running the code. After trying to reach the authors for support on GitHub, we were able to solve the issue and run the code by patching the package manually. However, after running the code, we found that CellMincer was not able to produce denoised outputs for our REFINED dataset.
+While this is in line with the authors' report that CellMincer may not always perform well on Calcium Imaging data, we are confident that with further modifications to the model architecture, it could represent a valuable tool for denoising Calcium Imaging data. 
+
+Algorithms in the CAREamics framework (i.e., N2N and N2V) have proven to be generally easy to train and use also on desktop computers, however they sometimes required an unexpectedly high amount of RAM during the prediction phase, especially on the MOUSENEU_LP dataset or with 3D models. This may be a limitation for researchers with limited computational resources. CAREamics authors are aware of this issue and are working on a solution to mitigate this problem. 
+
+Lastly, we found that the DeepCAD-RT algorithm was the most user-friendly and easy to implement, providing good denoising performances on both the MOUSENEU_LP and REFINED datasets. DeepCAD-RT is in fact an iterative improvement of the original DeepCAD algorithm, meant to provide real-time denoising capabilities for Calcium Imaging data. 
 
 #### Denoising performances
-This exploratory analysis has provided valuable insights into the performance of different denoising algorithms on Calcium Imaging data. While this study is not exhaustive, it highlights the importance of tailoring denoising algorithms to the specific characteristics of the data. In particular, we used two different datasets to evaluate the performance of Noise2Noise, Noise2Void, and DeepCAD-RT on Calcium Imaging data. The results show that DeepCAD-RT provided good performances both on the MOUSENEU_LP and REFINED datasets, while Noise2Noise and Noise2Void struggled to capture the underlying signal in the former dataset. In the latter dataset, all algorithms were able to denoise the data effectively, with Noise2Noise producing smoother outputs compared to Noise2Void and DeepCAD-RT. One possible explaination for the difference in performance between the two datasets if the higher noise levels present in the MOUSENEU_LP dataset, which may have made it more challenging for Noise2Noise and Noise2Void to denoise the data effectively. In contrast, the REFINED dataset had a better Signal-to-Noise ratio, while being more affected by correlated noise. Moreover, for the REFINED dataset, we found that 3D Noise2Void seems to have a slight edge over DeepCAD-RT in terms of image quality, and this highlights the need for further investigation into the performance of 3D denoising algorithms on Calcium Imaging data.
+This exploratory analysis has provided valuable insights into the performance of different denoising algorithms on Calcium Imaging data. While this study is not exhaustive, it highlights the importance of tailoring denoising algorithms to the specific characteristics of the data. In particular, we used two different datasets to evaluate the performance of Noise2Noise, Noise2Void, and DeepCAD-RT on Calcium Imaging data. 
+
+The results show that DeepCAD-RT provided good performances both on the MOUSENEU_LP and REFINED datasets, while Noise2Noise and Noise2Void struggled to capture the underlying signal in the former dataset. In the latter dataset, all algorithms were able to denoise the data effectively, with Noise2Noise producing smoother outputs compared to Noise2Void and DeepCAD-RT. One possible explaination for the difference in performance between the two datasets is the higher noise levels present in the MOUSENEU_LP dataset, which may have made it more challenging for Noise2Noise and Noise2Void to denoise the data effectively. 
+
+In contrast, the REFINED dataset had a better Signal-to-Noise ratio, although being more affected by correlated noise. In this case, we found that while none of the algorithm we tried were able to reduce correlated noise, 3D Noise2Void seems to have a slight edge over DeepCAD-RT in terms of qualitative image quality. This highlights the need for further investigation into the performance of 3D denoising algorithms on Calcium Imaging data.
 
 
 ### Conclusions
