@@ -172,6 +172,7 @@ For a detailed comparison of the results obtained with each algorithm, please re
 | NIDDL_N2V_5     | 128        | 30     | 2.995562                 | 1.818422                |              |
 | NIDDL_N2V_6     | 64         | 30     | 2.779872                 | 1.703397                |              |
 
+
 Noise2Void has been tested on 2D frames with different patch sizes and number of epochs. We compared the difference between the [Scale Invariant PSNR](https://arxiv.org/abs/1711.00541) of LowSNR vs HighSNR and Predictions vs HighSNR. We report both mean and standard deviation across all the images in the NIDDL dataset. 
 
 The best results were obtained with a patch size of 64, 10 epochs, and NO data augmentation. The same configuration was used as a starting baseline for the other experiments.
@@ -179,7 +180,7 @@ The best results were obtained with a patch size of 64, 10 epochs, and NO data a
 
 ### Experiments on the MOUSENEU_LP Dataset
 
-For the MOUSENEU_LP dataset, we compared the performance of Noise2Noise, Noise2Void, and DeepCAD-RT on Calcium Imaging data. The results are summarized in the table below.
+For the MOUSENEU_LP dataset, we compared the performance of Noise2Noise, Noise2Void, and DeepCAD-RT with the corresponding HighSNR on Calcium Imaging data. For comparison, we also include the "lowSNR" target, which represent the input to the denoising model. The results are summarized in the table below.
 
 | split   | target_name           | ssim          | microssim     | psnr           | si_psnr        | Preview |
 |:--------|:----------------------|:--------------|:--------------|:---------------|:---------------|:--------|
