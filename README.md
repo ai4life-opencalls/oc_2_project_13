@@ -181,16 +181,16 @@ The best results were obtained with a patch size of 64, 10 epochs, and NO data a
 
 For the MOUSENEU_LP dataset, we compared the performance of Noise2Noise, Noise2Void, and DeepCAD-RT on Calcium Imaging data. The results are summarized in the table below.
 
-| split   | target_name           | ssim          | microssim     | psnr           | si_psnr        |
-|:--------|:----------------------|:--------------|:--------------|:---------------|:---------------|
-| *train*   | *lowSNR*                | *0.484 ± 0.027* | *0.194 ± 0.018* | *23.698 ± 0.203* | *23.490 ± 0.538* |
-| train   | **MOUSENEU_LP_DEEPCAD_1** | **0.496 ± 0.027** | **0.301 ± 0.023** | **23.752 ± 0.203** | **24.591 ± 0.576** |
-| train   | MOUSENEU_LP_N2N_1     | 0.490 ± 0.026 | 0.226 ± 0.019 | 23.458 ± 0.200 | 23.973 ± 0.552 |
-| train   | MOUSENEU_LP_N2V_1     | 0.489 ± 0.027 | 0.190 ± 0.016 | 23.678 ± 0.214 | 23.496 ± 0.538 |
-| *val*     | *lowSNR*                | *0.411 ± 0.020* | *0.174 ± 0.014* | *20.431 ± 0.150* | *22.330 ± 0.477* |
-| val     | **MOUSENEU_LP_DEEPCAD_1** | **0.421 ± 0.020** | **0.285 ± 0.020** | **20.464 ± 0.151** | **23.713 ± 0.525** |
-| val     | MOUSENEU_LP_N2N_1     | 0.415 ± 0.020 | 0.206 ± 0.016 | 20.414 ± 0.159 | 22.522 ± 0.480 |
-| val     | MOUSENEU_LP_N2V_1     | 0.415 ± 0.020 | 0.186 ± 0.014 | 20.594 ± 0.159 | 22.297 ± 0.476 |
+| split   | target_name           | ssim          | microssim     | psnr           | si_psnr        | Preview |
+|:--------|:----------------------|:--------------|:--------------|:---------------|:---------------|:--------|
+| *train*   | *lowSNR*                | *0.484 ± 0.027* | *0.194 ± 0.018* | *23.698 ± 0.203* | *23.490 ± 0.538* | *![](docs/experiments_preview/MOUSENEU_LP/train/input.gif)* |
+| train   | **MOUSENEU_LP_DEEPCAD_1** | **0.496 ± 0.027** | **0.301 ± 0.023** | **23.752 ± 0.203** | **24.591 ± 0.576** | ![](docs/experiments_preview/MOUSENEU_LP/train/MOUSENEU_LP_DEEPCAD_1.gif) |
+| train   | MOUSENEU_LP_N2N_1     | 0.490 ± 0.026 | 0.226 ± 0.019 | 23.458 ± 0.200 | 23.973 ± 0.552 | ![](docs/experiments_preview/MOUSENEU_LP/train/MOUSENEU_LP_N2N_1.gif) |
+| train   | MOUSENEU_LP_N2V_1     | 0.489 ± 0.027 | 0.190 ± 0.016 | 23.678 ± 0.214 | 23.496 ± 0.538 | ![](docs/experiments_preview/MOUSENEU_LP/train/MOUSENEU_LP_N2V_1.gif) |
+| *val*     | *lowSNR*                | *0.411 ± 0.020* | *0.174 ± 0.014* | *20.431 ± 0.150* | *22.330 ± 0.477* | *![](docs/experiments_preview/MOUSENEU_LP/val/input.gif)* |
+| val     | **MOUSENEU_LP_DEEPCAD_1** | **0.421 ± 0.020** | **0.285 ± 0.020** | **20.464 ± 0.151** | **23.713 ± 0.525** | ![](docs/experiments_preview/MOUSENEU_LP/val/MOUSENEU_LP_DEEPCAD_1.gif) |
+| val     | MOUSENEU_LP_N2N_1     | 0.415 ± 0.020 | 0.206 ± 0.016 | 20.414 ± 0.159 | 22.522 ± 0.480 |   ![](docs/experiments_preview/MOUSENEU_LP/val/MOUSENEU_LP_N2N_1.gif) |
+| val     | MOUSENEU_LP_N2V_1     | 0.415 ± 0.020 | 0.186 ± 0.014 | 20.594 ± 0.159 | 22.297 ± 0.476 |  ![](docs/experiments_preview/MOUSENEU_LP/val/MOUSENEU_LP_N2V_1.gif) |
 
 Both from quantitative analysis and visual inspection, DeepCAD-RT outperformed Noise2Noise and Noise2Void on the MOUSENEU_LP dataset. \
 In particular, Noise2Noise and Noise2Void fail to capture the underlying signal with the parameter used for training. DeepCAD-RT, on the other hand, was able to denoise the data effectively, - providing a cleaner output compared to the noisy input - by using the default parameters provided by the authors.
